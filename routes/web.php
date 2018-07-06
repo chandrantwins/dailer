@@ -65,6 +65,7 @@ Route::group(['middleware' => ['auth','role:admin,subadmin']], function () {
 // user -> candidate|company
 Route::group(array('before' => 'role'), function() {
     Route::get('/contact','ContactController@show')->name('contact.get');
+	Route::get('/calendar/{id}','ContactController@calendar')->name('contact.calendar');
     Route::get('/contact/email','ContactController@email')->name('contact.email');
     Route::get('/contact/{id}/question','ContactController@question')->name('contact.question');
     Route::post('/contact/{id}/question','ContactController@question')->name('contact.question');

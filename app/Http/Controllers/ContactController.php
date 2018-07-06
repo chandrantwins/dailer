@@ -201,6 +201,113 @@ class ContactController extends Controller
         }
     }
 
+	public function calendar(Request $request)
+    {
+        $user = Auth::user();
+		$id = $request->id;
+        if (in_array($user->role, [User::ADMIN, User::SUBADMIN])) {
+            $contact = Contact::find($id);
+            return view("contact.$contact->type.show", compact('contact', 'subject', 'message'));
+        } else {
+            if ($user->contacts()->count() == 0) {
+                $now = Carbon::now();
+                $contact_queue = DB::table('queues')
+                    ->where('type', $user->role)
+                    ->where('enabled', true)
+                    ->first();
+
+                if (null != $contact_queue) {
+                    $contact = Contact::find($contact_queue->contact_id);
+                    $contact->user_id = $user->id;
+                    $contact->save();
+
+                    DB::table('assign_log')->insert([
+                        'via_questions' => true,
+                        'user_id' => $user->id,
+                        'contact_id' => $contact->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                    DB::table('queues')
+                        ->where('contact_id', $contact->id)
+                        ->update([
+                            'user_id' => $user->id,
+                            'enabled' => false
+                        ]);
+                } else {
+                    return view("contact.no_contact");
+                }
+            } else {
+                $contact = $user->contacts()->first();
+                $assignLog = DB::table('assign_log')
+                    ->where('user_id', $user->id)
+                    ->where('contact_id', $contact->id)
+                    ->orderBy('updated_at', 'desc')
+                    ->first();
+                if (null != $assignLog) {
+                    $assignsLogDate = new Carbon($assignLog->updated_at);
+
+                    if ($assignsLogDate->lt(Carbon::now()) && $assignsLogDate->diffInDays(Carbon::now()) > 7) {
+                        $contact_id = DB::table('queues')
+                            ->orderBy('id', 'asc')
+                            ->first()
+                            ->contact_id;
+                        $contact = Contact::find($contact_id);
+                    }
+                }
+            }
+			$events = Events::get();
+			$event_list = [];
+			$calendar_details = [];
+			if(count($events) > 0){
+				foreach($events as $key => $event){
+						$event_list[] = Calendar::event(
+								$event->event_name,
+								false,
+								new \DateTime($event->start_date),
+								new \DateTime($event->end_date. '+1 day')
+						);
+				}
+				$calendar_details = Calendar::addEvents($event_list)->setOptions(['defaultView' => 'agendaWeek'])->setCallbacks([
+						'header'=> '{
+							left: "prev,next today",
+							center: "title",
+							right: "agendaWeek,agendaDay"
+						}',
+						'allDaySlot'=> 'false',						
+						'editable'=> 'true',
+						'eventLimit'=> 'true', // allow "more" link when too many events
+						'selectable'=> 'true',
+						'selectHelper'=>'true',
+						'navLinks'=> 'true', // can click day/week names to navigate views
+						'select'=> 'function(start, end, jsEvent, view) {
+							if($(".select_timezone").val() == ""){
+								alert("Please select timezone");
+							}else{								
+								$("div[id^=\"eventmodal\"]").attr("id","eventmodal"+Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+								// Display the modal.
+								// You could fill in the start and end fields based on the parameters
+								$("div[id^=\"eventmodal\"]").modal("show");
+								$("div[id^=\"eventmodal\"]").find("#start_date").val(moment(start).format("YYYY-MM-DD HH:MM:SS"));
+								$("div[id^=\"eventmodal\"]").find("#end_date").val(moment(end).format("YYYY-MM-DD HH:MM:SS"));
+							}
+						}',
+						'eventClick' => 'function(event) {                                
+								console.log("You clicked on an event!");
+								console.log(event);
+								// Display the modal and set the values to the event values.
+								$("div[id^=\"eventmodal\"]").modal("show");
+								$("div[id^=\"eventmodal\"]").find("#event_name").val(event.title);
+								$("div[id^=\"eventmodal\"]").find("#start_date").val(moment(event.start).format("YYYY-MM-DD HH:MM:SS"));
+								$("div[id^=\"eventmodal\"]").find("#end_date").val(moment(event.end).format("YYYY-MM-DD HH:MM:SS"));                                
+						}'
+				]);
+			}
+
+            return view("contact.$user->role.calendar", compact('contact', 'subject', 'message','calendar_details'));
+        }
+    }
+	
     /**
      * Show the form for editing the specified resource.
      *

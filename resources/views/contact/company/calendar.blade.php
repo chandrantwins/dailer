@@ -1,90 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
+
+
+
 <div class="row">
-    <div class="col-lg-12 margin-tb">
-        <div class="pull-left">
-            <h2>Show Contact</h2>
-        </div>
-        @if (\App\User::ADMIN == Auth::user()->role)
-        <div class="pull-right">
-            <a class="btn btn-primary" href="{{ route('users.index',['type'=>$contact->type]) }}"> Back</a>
-        </div>
-        @endif
-    </div>
-</div>
-<hr>
-<div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-offset-2 col-md-8">
-        <div id="here"></div>
-        <table class="table table-hover">
-            <tbody>
-                <tr>
-                    <th width="20%">Contact name</th>
-                    <td>{{$contact->first_name}} {{$contact->last_name}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">Position</th>
-                    <td>{{$contact->position}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">Email address</th>
-                    <td>{{$contact->email}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">City position is in</th>
-                    <td>{{$contact->city_position}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">Phone number</th>
-                    <td>{{$contact->phone}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">Job description</th>
-                    <td>{{$contact->description}}</td>
-                </tr>
-                <tr>
-                    <th width="20%">Note: </th>
-                    <td>
-                        @if(Session('call'))
-                            {{ Session('call')->note."\n" }}
-                        @endif
-                        {{$contact->note}}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-<hr>
-<div class="row">
-    <div class="col-xs-12">
-        <a class="btn btn-info" href="{{ route('contact.question',$contact->id) }}">Next page</a>        
-        <a class="btn btn-default pull-right" data-toggle="modal" data-target="#email_modal">Send email or update the contact</a>
-        <a class="btn btn-default pull-right" href="{{ route('contact.calendar',$contact->id) }}">Schedule</a>
-    </div>
-</div>
-<!-- calendar Modal -->
-<div class="modal fade" id="calendar_modal" tabindex="-1" role="dialog" aria-labelledby="Email" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-	<div class="panel panel-primary">
-		<div class="panel-heading"> Event Details</div>
-		<div class="panel-body"> 
-		@if(isset($calendar_details))		
+<h3> Event Details</h3>
+ 		@if(isset($calendar_details))		
 			{!! $calendar_details->calendar() !!}                    
-		@endif
-		</div>
-        </div>
-      </div>
-      <div class="modal-footer">        
+		@endif 
+     <div class="modal-footer">        
         <button type="button" class="btn btn-warning" id="information">Assign</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
+      </div>		
 </div>
+
+
+<!-- calendar Modal -->
+
 
 <div class="modal fade" tabindex="-1" role="dialog" id="eventmodal{{str_random(6)}}">
     <div class="modal-dialog" role="document">
