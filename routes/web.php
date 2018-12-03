@@ -98,6 +98,7 @@ Route::group(array('before' => 'closerrole'), function() {
 });
 
 Route::group(array('before'=>'reqruitedrole'), function(){
+    Route::get('/reqruited/contactview/{id}','ContactController@reqruitedview')->name('contact.reqruitedview');
     Route::get('/contact/contactview/{id}','ContactController@contactview')->name('contact.contactview');
     Route::post('/contact/invoice','ContactController@invoice')->name('contact.invoice');
     Route::get('/reqruited/calendar/{id}','ContactController@reqcalendar')->name('contact.reqcalendar');

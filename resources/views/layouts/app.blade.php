@@ -135,6 +135,9 @@
                         @elseif (in_array(Auth::user()->role, [\App\User::CANDIDATE,\App\User::COMPANY]))
                         <li><a href="{{route('contact.get')}}"><i class="fa fa-circle-o"></i> Contacts</a></li>
                         <li><a href="{{route('contact.follow-ups')}}"><i class="fa fa-arrow-left"></i> Follow-ups</a></li>
+                        @if (Auth::user()->hasRole(\App\User::COMPANY))
+                            <li><a href="{{route('contact.follow-ups')}}"><i class="fa fa-phone"></i> Not Show Appointments</a></li>
+                        @endif
                         @endif
                         @if (in_array(Auth::user()->role, [\App\User::REQRUITED]))
                             <li><a href="{{route('contact.get')}}"><i class="fa fa-circle-o"></i> Contacts</a></li>

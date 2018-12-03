@@ -108,6 +108,12 @@ class ContactController extends Controller
         }
         return view("contact.$type.show", compact('contact'));        
     }
+
+    public function reqruitedview(Request $request){
+        $contact = Contact::find($request->id);
+        return view("contact.reqruited.contactview", compact('contact'));
+    }
+
     /**
      * Display the specified resource.
      *
