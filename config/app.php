@@ -160,7 +160,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         MaddHatter\Laravelfullcalendar\ServiceProvider::class,
-		Aloha\Twilio\Support\Laravel\ServiceProvider::class,
+        Aloha\Twilio\Support\Laravel\ServiceProvider::class,
+        JDT\LaravelEmailTemplates\ServiceProvider::class,
     ],
 
     /*
@@ -210,7 +211,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'calendar'=> MaddHatter\Laravelfullcalendar\Facades\Calendar::class,
-		'Twilio' => Aloha\Twilio\Support\Laravel\Facade::class,
+        'Twilio' => Aloha\Twilio\Support\Laravel\Facade::class,
+        'EmailTemplate' => JDT\LaravelEmailTemplates\Facades\EmailTemplates::class,
     ],
 
 ];

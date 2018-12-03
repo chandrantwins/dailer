@@ -1,0 +1,41 @@
+.fc-unavailable {
+    background-image: url('../imgs/unavailable.jpg');
+    font-size: 14px;
+    border-radius: 0;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0px 1px 0px #E6E6E6;
+    opacity: 0.7;
+}
+
+.fc-break {
+    background-image: url('../imgs/break.jpg');
+    font-size: 14px;
+    border-radius: 0;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0px 1px 0px #E6E6E6;
+    opacity: 0.7;
+}
+
+.fc-custom {
+    background-image: url('../imgs/custom.jpg');
+    font-size: 14px;
+    border-radius: 0;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0px 1px 0px #E6E6E6;
+    opacity: 0.7;
+}
+
+.fc-sun { 
+	color:#337ab7;  
+	border-color: black;  
+	background-color: #ffa58c; 
+}
+
+.fc-sat {
+	color:#337ab7;
+	border-color: black;
+	background-color: #ffa58c;
+}

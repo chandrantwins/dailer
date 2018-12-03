@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Contact;
+use App\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\EmailTemplate;
+use App\Mail\WelcomeCandidateMail;
+use App\Mail\WelcomeCompanyMail;
+use Illuminate\Support\Facades\Mail;
 
 class UsersController extends Controller
 {
@@ -40,8 +45,8 @@ class UsersController extends Controller
     public function create()
     {
         $roles = User::ROLES;
-		$leaders = User::where('enabled', true)->where('role', USER::SUBADMIN);
-        return view('users.create', compact('roles','leaders'));
+        $leaders = User::where('enabled', true)->where('role', USER::SUBADMIN)->get()->pluck('full_name', 'id');
+        return view('users.create', ['roles'=>$roles,'leaders'=>$leaders]);
     }
 
     /**
@@ -67,13 +72,57 @@ class UsersController extends Controller
 
         $data['password'] = bcrypt($data['password']);
         $user = User::create($data);
-
-        $user->user_id = Auth::User()->id;
+        
+        if(isset($data['user_id'])){
+            $user->user_id = $data['user_id'];
+        }else{
+            $user->user_id = Auth::User()->id;
+        }
         $user->save();
+        // leader data
+        $leader = User::find($user->user_id);
+        $emailtemplate = EmailTemplate::where('handle', 'Onboarding-'.$user->role)->first();
+        $mail = \EmailTemplate::fetch('Onboarding-'.$user->role, ['Leadername'=>$leader->first_name.' '.$leader->last_name,
+            'Callername' => $user->first_name.' '.$user->last_name,'Emailaddress'=>$user->email,'Password'=>$request->password]); 
+        $smtp = ($emailtemplate->smtp =='reqruited')?'reqruited_':'';
+        $host = Setting::where('key', $smtp.'mail_host')->firstOrFail()->value;
+        $port = Setting::where('key', $smtp.'mail_port')->firstOrFail()->value;
+        $encryption = Setting::where('key', $smtp.'mail_encryption')->firstOrFail()->value;
+        $username = Setting::where('key', $smtp.'mail_username')->firstOrFail()->value;
+        $password = Setting::where('key', $smtp.'mail_password')->firstOrFail()->value;
+        $app_email = Setting::where('key', 'app_'.$smtp.'email')->firstOrFail()->value;
 
+        if (empty($host) || empty($port) || empty($username) || empty($password)) {
+            return false;
+        }
+
+        $transport = new \Swift_SmtpTransport($host, (int)$port);
+        $transport->setEncryption($encryption);
+        $transport->setUsername($username);
+        $transport->setPassword($password);
+
+        $mailer = new \Swift_Mailer($transport);
+        // Assign it to the Laravel Mailer
+        Mail::setSwiftMailer($mailer);
+        Mail::alwaysFrom($app_email, ucfirst(explode('.',substr($app_email, strpos($app_email, '@') + 1))[0]));
+        Mail::alwaysReplyTo($app_email);
+        try {            
+            if($user->role != 'subadmin' || $user->role != 'admin')
+                $response = \Mail::to($user->email)->cc([$leader->email])->send($mail);
+            else
+                $response = \Mail::to($user->email)->send($mail);
+            if(count(\Mail::failures()) == 0){
+                return redirect()->route('users.index')->with('alert', [
+                    'class' => 'success',
+                    'message' => 'User created successfully'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $response = $e->getMessage();
+        }        
         return redirect()->route('users.index')->with('alert', [
-            'class' => 'success',
-            'message' => 'User created successfully'
+            'class' => 'error',
+            'message' => $response
         ]);
     }
 
@@ -99,9 +148,9 @@ class UsersController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        $roles = User::ROLES;
-
-        return view('users.edit', compact('user', 'roles'));
+        $roles = User::ROLES;        
+        $leaders = User::where('enabled', true)->where('role', USER::SUBADMIN)->get()->pluck('full_name', 'id');;
+        return view('users.edit', compact('user', 'roles', 'leaders'));
     }
 
     /**
@@ -337,5 +386,14 @@ class UsersController extends Controller
         $member->save();
 
         return redirect()->route('users.leaders')->with('alert', ['class' => 'success', 'message' => 'User removed successfully']);
+    }
+    
+    public function dealflow(Request $request){
+        
+        return view('users.dealflow', compact('users'));
+    }
+    
+    public function todaystatus(Request $request){
+        return view('users.todaystatus', compact('users'));
     }
 }

@@ -21,14 +21,15 @@ class User extends Authenticatable
         'subadmin'     =>  'subadmin',
         'company'   =>  'company',
         'candidate' =>  'candidate',
-        'closer' => 'closer'
+        'closer' => 'closer',
+        'reqruited' => 'reqruited'
     ];
     const ADMIN = 'admin';
     const SUBADMIN = 'subadmin';
     const COMPANY = 'company';
     const CANDIDATE = 'candidate';
     const CLOSER = 'closer';
-
+    const REQRUITED = 'reqruited';
     /**
      * The attributes that are mass assignable.
      *
@@ -78,5 +79,9 @@ class User extends Authenticatable
     public function users()
     {
         return $this->hasMany('App\User');
+    }
+    
+    public function getFullNameAttribute ($value) {
+        return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
     }
 }

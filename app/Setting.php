@@ -11,6 +11,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Setting extends Model
 {
+    const TIMEZONES = [
+        '1' =>  'Pacific Standard Time (UTC - 8)',
+        '2' =>  'Mountain Standard Time (UTC - 7)',
+        '3' =>  'Central Standard Time (UTC - 6)',
+        '4' =>  'Eastern Standard Time (UTC - 5)'        
+    ];
+
     const ENCRYPTION = [
         NULL  => 'NONE',
         'ssl' => 'SSL',

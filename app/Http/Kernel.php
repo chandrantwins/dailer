@@ -60,6 +60,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
 
         'role'    => \App\Http\Middleware\CheckRole::class,
-		'closerrole'    => \App\Http\Middleware\CheckCloserRole::class
+        'closerrole'    => \App\Http\Middleware\CheckCloserRole::class,
+        'reqruitedrole' => \App\Http\Middleware\CheckReqruitedRole::class
     ];
 }

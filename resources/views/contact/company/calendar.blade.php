@@ -1,18 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-
-
-
 <div class="row">
-<h3> Event Details</h3>
- 		@if(isset($calendar_details))		
-			{!! $calendar_details->calendar() !!}                    
-		@endif 
-     <div class="modal-footer">        
-        <button type="button" class="btn btn-warning" id="information">Assign</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>		
+	<div class="panel panel-primary">
+		<div class="panel-heading">Contact Timezone</div>
+		<div class="panel-body">
+			{!! Form::open(array('route'=>['contact.postcalendar',$contact->id],'method'=>'POST','files'=>true)) !!}
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12">
+						@if(Session::has('success'))
+							<div class="alert alert-success">{{Session::get('success') }}</div>
+						@elseif (Session::has('warning'))
+							<div class="alert alert-danger">{{Session::get('warning') }}</div>
+						@endif
+					</div>
+					<div class="col-xs-4 col-sm-4 col-md-4">
+						<div class="form-group">
+							{!! Form::label('timezone','Timezone:')!!}
+							<div class="form-group">
+								{!! Form::select('timezoneindex',$timezones,null,['placeholder'=>'Select Timezone','class'=>'form-control','required'=>true,'id'=>'timezoneindex', 'onchange'=>'this.form.submit()']) !!}								
+								{!! $errors->first('timezoneindex', '<p class="alert alert-danger">:message</p>')!!}
+							</div>
+						</div>
+					</div>					
+			</div>
+		{!! Form::close() !!}
+		</div>
+	</div>	
+</div>
+<div id="here"></div>
+<div class="row">
+<h3> Appoinment Details</h3>
+        @if(isset($calendar_details))		
+                {!! $calendar_details->calendar() !!}                    
+        @endif 		
 </div>
 
 
@@ -24,11 +45,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Create new event</h4>
+                <h4 class="modal-title">Create new Appointment</h4>
             </div>
             <div class="modal-body">
-			<form action="{{route('contact.eventinformation')}}" method="post" id="eventinformation_form" name="{{$contact->id}}">
-				<div class="form-group">
+            <form action="{{route('appointment.information')}}" method="post" id="appointmentinformation_form" name="{{$contact->id}}">
+                <div class="form-group">
                     <label>First name:</label>
                     {!! Form::text('first_name',$contact->first_name,['placeholder'=>'First name','class'=>'form-control']) !!}
                 </div>
@@ -42,21 +63,22 @@
                 </div>
                 <div class="form-group">
                     <label>Phone number:</label>
-                    {!! Form::text('phone',$contact->phone,['placeholder'=>'Phone number','class'=>'form-control']) !!}
+                    {!! Form::text('phone',$contact->phone,['placeholder'=>'Phone number','class'=>'form-control', 'id'=>'phone']) !!}
                 </div>
-				<div class="form-group">
-                    <label>Event title:</label>
-                    {!! Form::text('event_name','',['placeholder'=>'Event title','class'=>'form-control', 'id'=>'event_name']) !!}
+                <div class="form-group">
+                    {!! Form::label('name', 'Description') !!}
+                    {!! Form::text('name', null, array('class' => 'form-control','placeholder' => 'Name','type' => 'text')) !!}
+                </div>				
+                <div class="form-group">
+                    {!! Form::label('whenLocal', 'Appointment time') !!}
+                    {!! Form::text('whenLocal', null, array('class' => 'form-control','placeholder' => 'Time of appointment','type' => 'text', 'id' => 'time-of-appointment-local')) !!}
+                    {!! Form::hidden('when', null, array('id' => 'time-of-appointment')) !!}
+                    {!! Form::hidden('timezoneOffset', null, array('id' => 'user-timezone')) !!}
+                    {!! Form::hidden('timezone', null, array('id' => 'user-timezone-name')) !!}
+                    {!! Form::hidden('phoneNumber', null, array('id' => 'phoneNumber')) !!}
+                    {!! Form::hidden('delta', 15, array('id' => 'delta')) !!}
                 </div>
-				<div class="form-group">
-                    <label>Starts at:</label>
-                    {!! Form::text('start_date','',['placeholder'=>'Starts at','class'=>'form-control', 'id'=>'start_date']) !!}
-                </div>
-				<div class="form-group">
-                    <label>Ends at:</label>
-                    {!! Form::text('end_date','',['placeholder'=>'Ends at','class'=>'form-control', 'id'=>'end_date']) !!}
-                </div> 
-			</form>				
+            </form>				
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -65,142 +87,57 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
-
-<!-- Modal -->
-<div class="modal fade" id="email_modal" tabindex="-1" role="dialog" aria-labelledby="Email" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-            <h3>Is this information correct? If not, please change it here:</h3>
-            <hr>
-            <form action="{{route('contact.information',$contact->id)}}" method="get" id="information_form">
-                <div class="form-group">
-                    <label>First name:</label>
-                    {!! Form::text('first_name',$contact->first_name,['placeholder'=>'First name','class'=>'form-control']) !!}
-                </div>
-                <div class="form-group">
-                    <label>Last name:</label>
-                    {!! Form::text('last_name',$contact->last_name,['placeholder'=>'Last name','class'=>'form-control']) !!}
-                </div>
-                <div class="form-group">
-                    <label>Email address:</label>
-                    {!! Form::email('email',$contact->email,['placeholder'=>'Email address','class'=>'form-control']) !!}
-                </div>
-                <div class="form-group">
-                    <label>Phone number:</label>
-                    {!! Form::text('phone',$contact->phone,['placeholder'=>'Phone number','class'=>'form-control']) !!}
-                </div>
-            </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="email">Send</button>
-        <button type="button" class="btn btn-warning" id="information">Update</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 @endsection
 
 @section('javascript')
+<script src="{{  URL::asset('js/datetime-picker.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.13/moment-timezone-with-data.js"></script>
+
 <script type="text/javascript">
     $(function () {
-		$.ajaxSetup({
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			}
-		});
-        $('#calendar_modal').on('shown.bs.modal', function () {
-            $("div[id^='calendar']").fullCalendar('render');
-            if($(".select_timezone").length == 0){
-                $(".fc-right").append('<select class="select_timezone form-group"><option value="">Select Timezone</option><option value="5">Pacific Standard Time (UTC - 8)</option><option value="9">Mountain Standard Time (UTC - 7)</option><option value="13">Central Standard Time (UTC - 6)</option><option value="16">Eastern Standard Time (UTC - 5)</option></select>');
-                $(".select_timezone").on("change", function(event) {
-                        if(this.value != ''){
-							$.get('/contact/events/events-json/'+this.value, function (data) {
-								//success data
-								console.log(data);
-								//$("div[id^='calendar']").fullCalendar('destroy');								
-							}) 
-								//$('div[id^=calendar]').fullCalendar('changeView', 'agendaWeek', this.value);
-								//$('div[id^=calendar]').fullCalendar({
-								//	editable: false,
-								//	events: '/contact/events/events-json/'+this.value
-								//});
-                                
-                                //$('div[id^=calendar]').fullCalendar('gotoDate', "2018-"+this.value+"-1");
-                        }
-                });
-            }
-        });
-        // Bind the dates to datetimepicker.
-        // You should pass the options you need
-        $("#start_date, #end_date").datetimepicker({format: 'YYYY-MM-DD HH:MM:SS'});
-        // Whenever the user clicks on the "save" button om the dialog
-        $('#save-event').on('click', function() {
-			$alert_success = '<div class="alert alert-success">Thank you! Your update successfully saved.</div>';
-			$alert_danger = '<div class="alert alert-danger">Error!! Please contact your responsible</div>';
-            var title = $('#event_name').val();
-            if (title) {
-				$form = $('#eventinformation_form');
-                var eventData = {
-                    title: title,
-                    start: $('#start_date').val(),
-                    end: $('#end_date').val()
-                };				
-				var data = $form.serializeArray();
-				data.push({name: 'id', value: $form.attr('name')});				
-				$.ajax({
-					type: $form.attr('method'),
-					url: $form.attr('action'),
-					data: data,
-				}).done(function(response) {
-					$("div[id^='calendar']").fullCalendar('renderEvent', eventData, true); // stick? = true
-					$('#here').html($alert_success);
-				}).fail(function(response) {
-					$('#here').html($alert_danger);
-				});
-                
-            }
-            // hide modal
-            $("div[id^='eventmodal']").modal('hide');
-        });
-        
-        $('#information').on('click',function(event) {
-            $alert_success = '<div class="alert alert-success">Thank you! Your update successfully saved.</div>'
-            
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            // Whenever the user clicks on the "save" button om the dialog
+            $('#save-event').on('click', function() {
+            var appointmentInISOFormat = new Date($('input#time-of-appointment-local').val() + ' UTC').toISOString();
+            $('input#time-of-appointment').val(appointmentInISOFormat);
+            $('input#user-timezone').val(new Date().getTimezoneOffset());
+            $('input#phoneNumber').val($('input#phone').val());
+            $('input#user-timezone-name').val(moment.tz.guess());
+            $alert_success = '<div class="alert alert-success">Thank you! Your Appointment successfully saved.</div>';
             $alert_danger = '<div class="alert alert-danger">Error!! Please contact your responsible</div>';
-            $form = $('#information_form');
+            var title = $('#name').val();
+            $form = $('#appointmentinformation_form');
+            var eventData = {
+                title: title,
+                start: $('#start_date').val(),
+                end: $('#end_date').val()
+            };				
+            var data = $form.serializeArray();
+            data.push({name: 'id', value: $form.attr('name')});
+            data.push({name: 'timezoneindex', value: $('#timezoneindex').val()});
             $.ajax({
                 type: $form.attr('method'),
                 url: $form.attr('action'),
-                data: $form.serializeArray(),
+                data: data,
+                success: function(response) {
+                    if(response.success){
+                        window.location.href = response.url;
+                    }
+                }
             }).done(function(response) {
+                $("div[id^='calendar']").fullCalendar('renderEvent', eventData, true); // stick? = true
                 $('#here').html($alert_success);
             }).fail(function(response) {
                 $('#here').html($alert_danger);
             });
-        });
-
-        $('#email').on('click',function(event) {
-            $alert_success = '<div class="alert alert-success">Thank you! Your message has been sent successfully.</div>'
-            
-            $alert_danger = '<div class="alert alert-danger">Your message has not been sent. Please contact your responsible</div>';
-            $.ajax({
-                type: 'GET',
-                url: '{{route('contact.email')}}',
-                data: {contact:'{{$contact->id}}',email:$('input[name="email"]').val()}
-            }).done(function(response) {
-                if (response == 1) {
-                    $('#here').html($alert_success);
-                } else {
-                    $('#here').html($alert_danger);
-                }
-            }).fail(function(response) {
-                $('#here').html($alert_danger);
-            }).always(function(response) {
-                $('#email_modal').modal('hide');
-            });
-        });
+            // hide modal
+            $("div[id^='eventmodal']").modal('hide');
+        });        
     });
 </script>
 @endsection

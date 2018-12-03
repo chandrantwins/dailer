@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // User seeder will use the roles above created.
+        $this->call(AppSettingSeeder::class);
+        $this->call(ReqruitedSeeder::class);
         $this->call(CloserSettingSeeder::class);
         $this->call(SettingTableSeeder::class);
         $this->call(UserTableSeeder::class);

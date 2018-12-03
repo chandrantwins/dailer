@@ -61,6 +61,8 @@
                 {!! Form::textarea('note', null, ['placeholder'=>'Note','class'=>'form-control']) !!}
             </div>
         </div>
+        <input type="hidden" name="timezoneOffset" id="timezoneOffset">
+        <input type="hidden" name="timezone" id="timezone">    
         <div class="col-xs-12 text-center form-group">
             <button type="submit" class="btn btn-primary">Next page</button>
         </div>
@@ -74,8 +76,14 @@
 <script src="{{asset('vendor/bootstrap-timepicker/js/bootstrap-timepicker.js')}}"></script>
 <!-- bootstrap datepicker -->
 <script src="{{asset('vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js')}}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.13/moment-timezone-with-data.js"></script>
 <script type="text/javascript">
     $(function () {
+        document.getElementById("timezoneOffset").value= new Date().getTimezoneOffset();
+        var timezone = moment.tz.guess();
+        $('#timezone').val(timezone);
+
         if ($('input[name="answer"]:checked').val() === "{{App\Call::ANSWER_PROGRESS}}") {
             $('#follow-up').show();
         }

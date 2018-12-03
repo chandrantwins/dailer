@@ -21,7 +21,7 @@
             </tr>
             <tr>
                 <th width="20%">Message: </th>
-                <td>{!!$email->message!!}</td>
+                <td>{!!$email->content!!}</td>
             </tr>
             </tbody>
         </table>

@@ -6,6 +6,10 @@ use App\User;
 use App\Call;
 use App\Contact;
 use App\ScheduleCall;
+use App\Appointment;
+
+use Calendar;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -375,6 +379,45 @@ class ReportingController extends Controller
         ]);
     }
     
+    public function todaystatus (Request $request){
+        $type = $request->type;        
+        $calls_raw = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')->select('calls.user_id', 'contacts.first_name', 'contacts.last_name','calls.contact_id')->where('contacts.type', $type)->whereRaw('calls.created_at > (NOW() - INTERVAL 24 HOUR)')->groupBy('calls.user_id')->get();        
+        
+        $calls = [];
+        foreach ($calls_raw as $call) {
+            $user = User::find($call->user_id);
+            $contact = $call->contact()->first();
+            $successful = Call::where('calls.user_id', $call->user_id)
+               ->whereRaw('calls.created_at > (NOW() - INTERVAL 24 HOUR)')
+               ->where('calls.answer', Call::ANSWER_SUCCESSFULLY)
+               ->groupBy('calls.user_id')
+               ->orderBy('calls.updated_at');
+           $in_progress = Call::where('calls.answer', Call::ANSWER_PROGRESS)
+               ->where('calls.user_id', $call->user_id)
+               ->whereRaw('calls.created_at > (NOW() - INTERVAL 24 HOUR)')
+               ->groupBy('calls.user_id')
+               ->orderBy('calls.updated_at');
+           $answered = Call::where('calls.user_id', $call->user_id)
+               ->whereIn('calls.answer', [Call::ANSWER_SUCCESSFULLY, Call::ANSWER_PROGRESS, Call::ANSWER_UNSUCCESSFUL, Call::ANSWER_ASKED_REMOVED, Call::ANSWER_WRONG_NUMBER])
+               ->whereRaw('calls.created_at > (NOW() - INTERVAL 24 HOUR)')
+               ->groupBy('calls.user_id')
+               ->orderBy('calls.updated_at');
+           $total = Call::where('calls.user_id', $call->user_id)
+               ->whereRaw('calls.created_at > (NOW() - INTERVAL 24 HOUR)')
+               ->groupBy('calls.user_id')
+               ->orderBy('calls.updated_at');
+           $calls[] = [                
+                $user->first_name . ' ' . $user->last_name,
+                $total->count(),
+                $answered->count(),
+                $in_progress->count(),
+                $successful->count()
+            ];
+        }
+
+        return $calls;
+    }
+    
     public function getStatistic($type = 'candidate',$userid, $startDate, $endDate)
     {
         $successful = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')
@@ -435,5 +478,122 @@ class ReportingController extends Controller
         ];
 
         return $data;
-    }    
+    }
+
+    public function dealflow(Request $request)
+    {
+        $type = ($request->type == 'monikl')?'closer':'reqruited';
+        $successful = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')
+            ->where('contacts.type', $type)
+            ->where('calls.answer', Call::ANSWER_SUCCESSFULLY)
+            ->orderBy('calls.updated_at');
+        $in_progress = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')
+            ->where('contacts.type', $type)
+            ->where('calls.answer', Call::ANSWER_PROGRESS)
+            ->orderBy('calls.updated_at');
+        $answered = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')
+            ->where('contacts.type', $type)
+            ->whereIn('calls.answer', [Call::ANSWER_SUCCESSFULLY, Call::ANSWER_PROGRESS, Call::ANSWER_UNSUCCESSFUL, Call::ANSWER_ASKED_REMOVED, Call::ANSWER_WRONG_NUMBER])
+            ->orderBy('calls.updated_at');
+        $total = Call::join('contacts', 'calls.contact_id', '=', 'contacts.id')
+            ->where('contacts.type', $type)
+            ->orderBy('calls.updated_at');
+        if($type == 'reqruited'){
+            $data = [
+                'totalcalls' => $total->get()->count(),
+                'answeredcalls' => $answered->get()->count(),
+                'followupcalls' => $in_progress->get()->count(),
+                'successcalls' => $successful->get()->count(),                
+            ];
+        }else{
+            $data = [
+                'totalcalls' => $total->orWhere('contacts.type', 'company')->get()->count(),
+                'answeredcalls' => $answered->orWhere('contacts.type', 'company')->get()->count(),
+                'followupcalls' => $in_progress->orWhere('contacts.type', 'company')->get()->count(),
+                'successcalls' => $successful->orWhere('contacts.type', 'company')->get()->count()                
+            ];            
+        }
+        return $data;
+    }
+	
+    public function appointment(Request $request)
+    {
+        if (Auth::User()->role == User::ADMIN) {
+            $allAppointments = Appointment::orderBy('id', 'ASC')->get();
+        }
+        if (Auth::User()->role == User::SUBADMIN) {
+            $memberids = User::find(Auth::user()->id)->users()->get()->pluck('id')->toArray();
+            $allAppointments = Appointment::orderBy('id', 'ASC')->whereIn('assigned_to',$memberids)->get();
+        }
+            foreach($allAppointments as $appoinment){
+                $event_list[] = Calendar::event(
+                    $appoinment->name,
+                    false,
+                    new \DateTime($appoinment->originalnotificationTime),
+                    new \DateTime($appoinment->originalnotificationTime.'+30 minutes'),
+                    'calevent_'.$appoinment->id,
+                    array('color'=>"#ff9f89",'className'=>'fc-custom','editable'=>false,'overlap'=>false)
+                );
+            }
+            $businessHours = [["start" => "08:00", "end" => "12:00", "dow" => [1,2,3,4,5],"className"=>"fc-nonbusiness"],["start" => "14:00", "end" => "17:00", "dow" => [1,2,3,4,5]]];
+            $calendar_details = Calendar::addEvents($event_list)->setOptions(['defaultView' => 'agendaWeek','businessHours'=>$businessHours])->setCallbacks([
+                       'header'=> '{
+                        left: "prev,next today",
+                        center: "title",
+                        right: "agendaWeek,agendaDay"
+                }',
+                'allDaySlot'=> 'false',						
+                'editable'=> 'true',
+                'weekends'=> 'false',
+                'eventLimit'=> 'true', // allow "more" link when too many events
+                'selectable'=> 'true',
+                'selectHelper'=>'true',
+                'eventColor'=>"'green'",
+                'disableDragging'=>'true',
+                'navLinks'=> 'true', // can click day/week names to navigate views
+                /**'businessHours'=> '[ 
+                    { start: "07:00",end: "12:00",dow: [1, 2, 3 ,4 , 5]},
+                    { start: "14:00",end: "17:00",dow: [1, 2, 3 ,4 , 5]},
+                ]',**/
+                'select'=> 'function(start, end, jsEvent, view) {
+                        //https://stackoverflow.com/questions/42871482/jquery-inarray-disabling-days-with-select-option-in-fullcalendar
+                        var events = $("div[id^=\"calendar\"]").fullCalendar("clientEvents");
+                        var businessHours = $("div[id^=\"calendar\"]").fullCalendar("option","businessHours");
+                        console.log(businessHours);
+                        console.log(events);
+                        if (moment().diff(start, "days") > 0) {
+                            alert("Please select Future date");
+                            $("div[id^=\"calendar\"]").fullCalendar("unselect");
+                            return false;
+                        }
+                        if($("#timezone").val() == ""){
+                                alert("Please select timezone");
+                        }else{								
+                            $("div[id^=\"eventmodal\"]").attr("id","eventmodal"+Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+                            // Display the modal.
+                            // You could fill in the start and end fields based on the parameters
+                            $("div[id^=\"eventmodal\"]").modal("show");
+                            $("div[id^=\"eventmodal\"]").find("#time-of-appointment-local").val(moment(start).format("MM/DD/YYYY hh:mm A"));
+                        }
+                }',
+                'eventClick' => 'function(event) { 
+                        console.log("You clicked on an event!");
+                        console.log(event);
+                        // Display the modal and set the values to the event values.
+                        $("div[id^=\"eventmodal\"]").modal("show");
+                        $("div[id^=\"eventmodal\"]").find("#name").val(event.title);
+                        $("div[id^=\"eventmodal\"]").find("#time-of-appointment-local").val(moment(event.start).format("MM/DD/YYYY hh:mm A"));
+                }',
+                'dayClick'=>'function(date, jsEvent, view) {
+                    if (jsEvent.target.classList.contains("fc-custom")) {
+                        alert("Click Background Event Area");
+                    }
+                }',
+                'eventRender'=>'function (event, element) {
+                    console.log(event);
+                }'
+        ]);
+            
+        return view('event.admin',compact('calendar_details'));   
+    }
 }

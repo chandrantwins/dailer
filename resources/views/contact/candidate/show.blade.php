@@ -47,10 +47,15 @@
                 <tr>
                     <th width="20%">Note: </th>
                     <td>
-                        @if(Session('call'))
-                            {{ Session('call')->note."\n" }}
-                        @endif
-                        {{$contact->note}}
+                        @php
+                            echo '<ui>';
+                            foreach($contact->calls as $call){
+                                if(!is_null($call->note)){
+                                    echo '<li>'.$call->note.'</li>';
+                                }
+                            }
+                            echo '</ul>';
+                        @endphp              
                     </td>
                 </tr>
             </tbody>

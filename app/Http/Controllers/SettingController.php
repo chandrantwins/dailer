@@ -3,13 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Setting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-	public function closerindex(Request $request){
-		return view('setting/closerindex');
-	}
+    public function closerlist(Request $request){
+        $timezones = Setting::TIMEZONES;
+        $closerid = Auth::User()->id;
+        if ($request->isMethod('post')) {
+            $workinghours = $request->get('workhours_' . $closerid);
+            $selectedTimezone = $this->getTimezoneNameByIndex($request->get('timezone_' . $closerid));
+            //print_r($workinghours);
+            foreach ($workinghours as $k=>$hours){
+                if($k < 5){ // Monday to friday only
+                    if($hours['isActive'] == 'true'){
+                        // convert time SelectedTimezone to UTC
+                        $todayFromdate = date('Y-m-d').' '.$hours['timeFrom'].':00';
+                        $workinghours[$k]['timeFrom'] = $this->getConvertedDateTime($todayFromdate, $selectedTimezone,'UTC', 'H:i');
+                        $todayTodate = date('Y-m-d').' '.$hours['timeTill'].':00';
+                        $workinghours[$k]['timeTill'] = $this->getConvertedDateTime($todayTodate, $selectedTimezone,'UTC', 'H:i');
+                    }
+                }
+            }
+            
+            $timezone = Setting::updateOrCreate(['key' => 'timezone_'.$closerid,'name'=>'Timezone '.$closerid], ['value' => $request->get('timezone_' . $closerid)]);
+            $workhours = Setting::updateOrCreate(['key' => 'workhours_'.$closerid,'name'=>'Workhours '.$closerid], ['value' => json_encode($workinghours)]);            
+        }else{
+            $timezone = Setting::select('value')->where('key','timezone_' . $closerid)->get();
+            if(isset($timezone[0])){
+                $timezone = $timezone[0]->value;
+                $selectedTimezone = $this->getTimezoneNameByIndex($timezone);
+            }
+            $workhours = Setting::select('value')->where('key', 'workhours_' . $closerid)->get();            
+            if(isset($workhours[0])){
+                $workinghours = json_decode($workhours[0]->value);                
+                foreach ($workinghours as $k=>$hours){
+                    if($k < 5){ // Monday to friday only                                            
+                        if($hours->isActive == 'true'){
+                            // convert time SelectedTimezone to UTC
+                            $todayFromdate = date('Y-m-d').' '.$hours->timeFrom.':00';
+                            $workinghours[$k]->timeFrom = $this->getConvertedDateTime($todayFromdate, 'UTC',$selectedTimezone, 'H:i');
+                            $todayTodate = date('Y-m-d').' '.$hours->timeTill.':00';
+                            $workinghours[$k]->timeTill = $this->getConvertedDateTime($todayTodate, 'UTC',$selectedTimezone, 'H:i');
+                        }
+                    }
+                }
+                $trueval = str_replace('"true"', 'true',json_encode($workinghours));
+                $workhours = str_replace('"false"', 'false',$trueval);
+            }
+        }
+        return view('setting/closerindex',['timezones'=>$timezones,'closerid'=>$closerid,'timezone'=>$timezone,'workhours'=>$workhours]);
+    }
 	
     /**
      * Show the application dashboard.
@@ -22,7 +67,7 @@ class SettingController extends Controller
     {
         if ($request->isMethod('post')) {
             foreach ($request->all() as $key=>$value) {
-                if (("mail_" === substr($key,0,5)) || substr($key,0,4) === "app_" || substr($key,0,7) === "payout_") {
+                if (("mail_" === substr($key,0,5)) || substr($key,0,4) === "app_" || substr($key,0,7) === "payout_" || substr($key,0,9) === "reqruited") {
                     $setting = Setting::where('key',$key)->firstOrFail();
                     $setting->value = $value;
                     $setting->update();
@@ -33,6 +78,7 @@ class SettingController extends Controller
         $settings = Setting::where('key', 'like', 'app_%')
             ->orWhere('key', 'like', 'mail_%')
             ->orWhere('key', 'like', 'payout_%')
+            ->orWhere('key', 'like', 'reqruited_%')
             ->get();
         $encryptions = Setting::ENCRYPTION;
 
@@ -71,5 +117,31 @@ class SettingController extends Controller
 
             return redirect()->route("setting.index")->with('alert', ['class' => 'danger', 'message' => $e->getMessage()]);
         }
+    }
+    
+    private function getConvertedDateTime($datetime,$fromtimezone,$totimezone, $format){        
+        $given = new \DateTime($datetime, new \DateTimeZone($fromtimezone));
+        $given->setTimezone(new \DateTimeZone($totimezone));
+        $output = $given->format($format); 
+        return $output;
+    }
+    
+    private function getTimezoneNameByIndex($timezone){
+        //America/Los_Angeles - PST - 1
+        //America/Denver MST - 2
+        //America/Chicago - CST - 3
+        //America/New_York EST - 4
+
+        if($timezone == 1){
+            $timezonename = "America/Los_Angeles";
+        }elseif($timezone == 2){
+            $timezonename = "America/Denver";
+        }elseif($timezone == 3){
+            $timezonename = "America/Chicago";
+        }else{
+            $timezonename = "America/New_York";
+        }
+        
+        return $timezonename;
     }
 }

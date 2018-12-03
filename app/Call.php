@@ -36,6 +36,21 @@ class Call extends Model
             "Left message.",
             "Past gatekeeper.",
             "Wrong number.",
+            "Not Interested"
+        ],
+        "closer"=>[
+            "Successfully",
+            "Unsuccessful",
+            "Follow up",
+            "Not Showup"
+        ],
+        'reqruited'=>[            
+            "Asked to be removed.",
+            "Follow up",
+            "Left message.",
+            "Past gatekeeper.",
+            "Wrong number.",
+            "Not Interested"
         ]
     ];
 
@@ -57,6 +72,21 @@ class Call extends Model
             "Call not answer, but message left.",
             "Could not get past gatekeeper.",
             "Wrong number.",
+            "Presently not interested",
+        ],
+        "closer" => [
+            "Company signed up",
+            "Company did not sign up",
+            "Company showed for the call",
+            "Company did NOT show up for the call and reschedule"
+        ],
+        "reqruited" => [            
+            "Call answered, but asked to be removed.",
+            "Call answered, but need to follow up.",
+            "Call not answer, but message left.",
+            "Could not get past gatekeeper.",
+            "Wrong number.",
+            "Presently not interested"
         ]
     ];
 

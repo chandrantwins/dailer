@@ -9,7 +9,7 @@
     </div>
     <div class="col-xs-12 col-sm-8 col-md-6 form-group">
         <label>Role:</label>
-        {!! Form::select('role',$roles,null,['placeholder'=>'Select user type','class'=>'form-control','required'=>true]) !!}
+        {!! Form::select('role',$roles,null,['placeholder'=>'Select user type','class'=>'form-control','required'=>true,'id'=>'roles']) !!}
     </div>
     <div class="col-xs-12 col-sm-8 col-md-6 form-group">
         <label>Affiliate link:</label>
@@ -36,14 +36,9 @@
         {!! Form::text('phone', null, ['placeholder'=>'Phone number','class'=>'form-control']) !!}
     </div>
 	  
-	<div class=" col-xs-12 col-sm-8 col-md-6 form-group">
+	<div class=" col-xs-12 col-sm-8 col-md-6 form-group" id='leaderrole'>
 		<label>Leaders:</label>
-		<select class="select2 form-control" name="leader" id="leader">
-			<option value=""></option>
-			@foreach($leaders as $leader)
-			<option value="<?= $leader->id ?>"><?= $leader->first_name.' '.$leader->last_name ?></option>
-			@endforeach
-		</select>
+                {!! Form::select('user_id',$leaders,null,['placeholder'=>'Select Leader','class'=>'form-control','required'=>true,'id'=>'user_id']) !!}
 	</div>    
  
     <div class="col-xs-12 form-group">

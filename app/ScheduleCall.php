@@ -12,7 +12,7 @@ class ScheduleCall extends Model
      * @var array
      */
     protected $fillable = [
-        'remind_me_at', 'email_sent', 'call_id'
+        'remind_me_at', 'email_sent', 'call_id', 'originalremindmeat', 'timezoneOffset'
     ];
 
     /**

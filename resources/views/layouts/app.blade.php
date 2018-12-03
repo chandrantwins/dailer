@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
         <!-- Theme style -->
         <link rel="stylesheet" href="{{asset('css/AdminLTE.min.css')}}">
+		<link rel="stylesheet" href="{{asset('css/custom.css')}}">
         <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
         <link rel="stylesheet" href="{{asset('css/skins/skin-green.min.css')}}">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.2.7/fullcalendar.min.css"/>
@@ -67,11 +68,23 @@
                         <li class="header"></li>
                         <li class="header">MAIN NAVIGATION</li>
                         <li><a href="{{route('dashboard')}}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-						@if (Auth::user()->hasRole(\App\User::CLOSER))
-								<li><a href="{{route('appoinments')}}"><i class="fa fa-phone"></i> Appoinments</a></li>
-								<li><a href="{{route('closer.setting')}}"><i class="fa fa-gear"></i> Settings</a></li>
-						@endif
+                        @if (Auth::user()->hasRole(\App\User::CLOSER))
+                            <li><a href="{{route('appoinments')}}"><i class="fa fa-phone"></i> Appoinments</a></li>
+                            <li><a href="{{route('closer.setting')}}"><i class="fa fa-gear"></i> Settings</a></li>
+                        @endif
                         @if (Auth::user()->hasRole(\App\User::ADMIN) || Auth::user()->hasRole(\App\User::SUBADMIN))
+                        <li><a href="{{route('users.dealflow')}}"><i class="fa fa-envelope"></i> DealFlow</a></li>
+                        <li><a href="{{route('users.todaystatus')}}"><i class="fa fa-envelope"></i> Last24hours</a></li>
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="fa fa-phone"></i> <span>Appointments</span>
+                                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="{{route('appointments.upcoming')}}"><i class="fa fa-volume-control-phone"></i> <span>Upcoming</span></a>
+                                <li><a href="{{route('appointments.finished')}}"><i class="fa fa-phone-square"></i> Finished</a></li>
+                            </ul>
+                        </li> 
                         <li class="treeview">
                             <a href="#">
                                 <i class="fa fa-users"></i> <span>Callers</span>
@@ -84,7 +97,7 @@
                                 @endif
                                 <li><a href="{{route('users.deactivate_index')}}"><i class="fa fa-users"></i> Deactivated users</a></li>
                             </ul>
-                        </li>
+                        </li>                        
                         @if (Auth::user()->hasRole(\App\User::ADMIN))
                         <li class="treeview">
                             <a href="#">
@@ -94,6 +107,7 @@
                             <ul class="treeview-menu">
                                 <li><a href="{{route('contact.index',['type'=>'company'])}}"><i class="fa fa-circle-o"></i> Company</a></li>
                                 <li><a href="{{route('contact.index',['type'=>'candidate'])}}"><i class="fa fa-circle-o"></i> Candidate</a></li>
+                                <li><a href="{{route('contact.index',['type'=>'reqruited'])}}"><i class="fa fa-circle-o"></i> Reqruited</a></li>
                                 @if (Auth::user()->hasRole(\App\User::ADMIN))
                                 <li><a href="{{route('contact.deactivate_index')}}"><i class="fa fa-circle-o"></i> Deactivated contacts</a></li>
                                 @endif
@@ -111,6 +125,7 @@
                                 <li><a href="{{route('reporting.calls.all')}}"><i class="fa fa-circle-o"></i> All Calls</a></li>
                                 <li><a href="{{route('reporting.calls')}}"><i class="fa fa-circle-o"></i> Calls By caller</a></li>
                                 <li><a href="{{route('reporting.statistics')}}"><i class="fa fa-circle-o"></i> Statistic</a></li>
+                                <li><a href="{{route('reporting.appointment')}}"><i class="fa fa-circle-o"></i> Appointments</a></li>
                             </ul>
                         </li>
                         @if (Auth::user()->hasRole(\App\User::ADMIN))
@@ -120,6 +135,13 @@
                         @elseif (in_array(Auth::user()->role, [\App\User::CANDIDATE,\App\User::COMPANY]))
                         <li><a href="{{route('contact.get')}}"><i class="fa fa-circle-o"></i> Contacts</a></li>
                         <li><a href="{{route('contact.follow-ups')}}"><i class="fa fa-arrow-left"></i> Follow-ups</a></li>
+                        @endif
+                        @if (in_array(Auth::user()->role, [\App\User::REQRUITED]))
+                            <li><a href="{{route('contact.get')}}"><i class="fa fa-circle-o"></i> Contacts</a></li>
+                            <li><a href="{{route('contact.follow-ups')}}"><i class="fa fa-arrow-left"></i> Follow-ups</a></li>
+                            <li><a href="{{route('reqruited.appointments')}}"><i class="fa fa-phone"></i> Appoinments</a></li>
+                            <li><a href="{{route('reqruited.pendinginvoice')}}"><i class="fa fa-phone"></i> Unpaid Invoice</a></li>
+                            <li><a href="{{route('reqruited.setting')}}"><i class="fa fa-gear"></i> Settings</a></li>
                         @endif
                     </ul>
                 </section>
@@ -152,7 +174,14 @@
         <script src="{{asset('/js/adminlte.min.js')}}"></script>
         <!-- Full calendar -->
         <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.2.7/fullcalendar.min.js"></script>
+        <!-- d3.js -->
+        <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+        <!-- d3 funnel -->
+        <script src="{{asset('/js/d3-funnel.js')}}"></script>
+    
+        <!--<script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.2.7/fullcalendar.min.js"></script>
+        https://stackoverflow.com/questions/27834349/how-to-set-the-business-hours-for-fullcalender-v2-2-5 -->
+        <script src="{{asset('/js/fullcalendar.js')}}"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.2.17/jquery.timepicker.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/js/rainbow.min.js"></script>
@@ -166,7 +195,21 @@
             var table;
             $(document).ready(function() {
                 table = $('.table').DataTable({
-                    "ordering": false
+                    "ordering": true
+                });
+                leaderdropdown();
+                function leaderdropdown(){                    
+                   if($("#roles").val()=="subadmin" || $("#roles").val()=="admin"){                       
+                       $("#leaderrole").attr("style", "opacity: 0;");
+                       document.getElementById('user_id').value = 0;
+                       document.getElementById('user_id').removeAttribute("required");
+                   }else{
+                       $("#leaderrole").attr("style", "");
+                       $("#user_id").attr("required",true);
+                   }                    
+                }
+                $("#roles").change(function(){
+                    leaderdropdown();
                 });
             });
         </script>

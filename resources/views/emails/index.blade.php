@@ -16,7 +16,8 @@
             <thead>
                 <tr>
                     <td width="15%">Subject</td>
-                    <td width="15%">Type</td>
+                    <td width="10%">Operation</td>
+                    <td width="10%">Type</td>
                     <td width="50%">Message</td>
                     <td>Actions</td>
                 </tr>
@@ -25,8 +26,9 @@
             @foreach($emails as $email)
                 <tr>
                     <td>{{$email->subject}}</td>
+                    <td>{{$email->handle}}</td>
                     <td>{{$email->type}}</td>
-                    <td class="text-overflow">{!!$email->message!!}</td>
+                    <td class="text-overflow">{!!$email->content!!}</td>
                     <!-- we will also add show, edit, and delete buttons -->
                     <td>
                         <a class="btn btn-info btn-xs" href="{{route('emails.show',$email->id)}}">Show</a>

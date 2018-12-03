@@ -26,13 +26,7 @@
     <div class="col-md-6 col-xs-12">
         <h3>Working Timezone config</h3>
         <hr>
-		<select class="select_timezone form-group">
-			<option value="">Select Timezone</option>
-			<option value="5">Pacific Standard Time (UTC - 8)</option>
-			<option value="9">Mountain Standard Time (UTC - 7)</option>
-			<option value="13">Central Standard Time (UTC - 6)</option>
-			<option value="16">Eastern Standard Time (UTC - 5)</option>
-		</select>
+        {!! Form::select('timezone_'.$closerid,$timezones,$timezone,['placeholder'=>'Select Timezone','class'=>'form-control','required'=>true,'id'=>'timezone_'.$closerid]) !!}
 	</div>
     <div class="col-md-6 col-xs-12">
         <h3>Working Hours config</h3>
@@ -47,7 +41,7 @@
     </div>
 	<div class="col-md-12 col-xs-12">
 		<div class="col-xs-12 text-center form-group">
-			<button type="submit" class="btn btn-primary pull-left">Save</button>
+			<button type="button" id="submit" class="btn btn-primary pull-left">Save</button>
 		</div>
 	</div>
 </div>
@@ -56,13 +50,45 @@
 @section('javascript')
 <script type="text/javascript">
     $(function () {
-		var businessHoursManager = $("#businessHoursContainer3").businessHours();
-		$("#btnSerialize").click(function() {
-			$("textarea#businessHoursOutput1").val(JSON.stringify(businessHoursManager.serialize()));
-		}); 
+        $("#submit").click(function (xhr) {                
+                $.ajax({
+                    type: "POST",                    
+                    url: "{{route('closer.postsetting')}}",
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+                    },
+                    data: {                        
+                        timezone_{{$closerid}}: $("#timezone_{{$closerid}}").val(),
+                        workhours_{{$closerid}}: businessHoursManagerBootstrap.serialize(),
+                    },
+                    success: function () {
+                        alert('True');
+                    },
+                    error: function (xhr) {
+                        $('#validation-errors').html('');
+                        $.each(xhr.responseJSON.errors, function(key,value) {
+                            $('#validation-errors').append('<div class="alert alert-danger">'+value+'</div');
+                        }); 
+                    }
+                })
+        });        
+        /* initial data */
+        var operationTime = [
+            {"isActive":true,"timeFrom":"9:00","timeTill":"18:00"},
+            {"isActive":true,"timeFrom":"9:00","timeTill":"18:00"},
+            {"isActive":true,"timeFrom":"9:00","timeTill":"18:00"},
+            {"isActive":true,"timeFrom":"9:00","timeTill":"18:00"},
+            {"isActive":true,"timeFrom":"9:00","timeTill":"18:00"},
+            {"isActive":false,"timeFrom":null,"timeTill":null},
+            {"isActive":false,"timeFrom":null,"timeTill":null}
+        ];
+        if({!! $workhours !!} != ""){
+            operationTime = {!! $workhours !!};
+        }
         Rainbow.color();
         var b3 = $("#businessHoursContainer3");
         var businessHoursManagerBootstrap = b3.businessHours({
+            operationTime: operationTime,
             postInit: function () {
                 b3.find('.operationTimeFrom, .operationTimeTill').timepicker({
                     'timeFormat': 'H:i',

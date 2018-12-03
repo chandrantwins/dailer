@@ -179,13 +179,14 @@ class DashboardController extends Controller
         if ('both' == $type) {
             $data1 = $this->getStatistic('candidate', $startDate, $endDate);
             $data2 = $this->getStatistic('company', $startDate, $endDate);
+            $data3 = $this->getStatistic('reqruited', $startDate, $endDate);
             $data = [
-                'successful' => $data1['successful'] + $data2['successful'],
-                'in_progress' => $data1['in_progress'] + $data2['in_progress'],
-                'answered' => $data1['answered'] + $data2['answered'],
-                'wrong_numbers' => $data1['wrong_numbers'] + $data2['wrong_numbers'],
-                'blacklist' => $data1['blacklist'] + $data2['blacklist'],
-                'total' => $data1['total'] + $data2['total'],
+                'successful' => $data1['successful'] + $data2['successful']+ $data3['successful'],
+                'in_progress' => $data1['in_progress'] + $data2['in_progress']+ $data3['in_progress'],
+                'answered' => $data1['answered'] + $data2['answered']+ $data3['answered'],
+                'wrong_numbers' => $data1['wrong_numbers'] + $data2['wrong_numbers']+ $data3['wrong_numbers'],
+                'blacklist' => $data1['blacklist'] + $data2['blacklist']+ $data3['blacklist'],
+                'total' => $data1['total'] + $data2['total']+ $data3['total'],
             ];
         } else {
             $data = $this->getStatistic($type, $startDate, $endDate);

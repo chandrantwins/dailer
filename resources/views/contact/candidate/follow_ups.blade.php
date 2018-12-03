@@ -27,18 +27,8 @@
                     <td>{{$call->first_name}} {{$call->last_name}}</td>
                     <td>{{$call->email}}</td>
                     <td>{{$call->phone}}</td>
-                    <td>{{$call->updated_at}}</td>
-                    <td>
-<?php
-$remind_me = $call->remind_me_at - (new Carbon\Carbon($call->updated_at))->diffInSeconds(Carbon\Carbon::now());
-$ago = false;
-if($remind_me<0) {
-    $remind_me *= -1;
-    $ago = true;
-}
-?>
-                        <?= sprintf('%d days %02d:%02d:%02d', $remind_me/86400, $remind_me/3600%24, $remind_me/60%60, $remind_me%60); ?><?= ($ago)?' ago':''; ?>
-                    </td>
+                    <td>{{\Carbon\Carbon::parse($call->updated_at)->format('d-m-Y h:i:s A')}}</td>
+                    <td>{{$call->originalremindmeat}} ({{\Carbon\Carbon::createFromTimeStamp(strtotime($call->remind_me_at))->diffForHumans()}})</td>
                     <td>
                         <a class="btn btn-info" href="{{route('contact.follow-ups',['contact'=>$call->contact_id, 'call'=>$call->call_id])}}">Call me</a>
                     </td>

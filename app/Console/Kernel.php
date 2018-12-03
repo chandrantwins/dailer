@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        '\App\Console\Commands\SendReminders',
+        '\App\Console\Commands\SendReminderEmail',
     ];
 
     /**
@@ -27,6 +28,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+		$schedule->command('reminders:send')->everyMinute();
+                $schedule->command('emailreminders:send')->everyMinute();
         $schedule->call(function () {
             echo "*** Start checking calls in progress | " . Carbon::now() . " |\n";
             // reminder

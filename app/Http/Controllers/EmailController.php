@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Email;
+use App\EmailTemplate;
 use Illuminate\Http\Request;
 
 class EmailController extends Controller
@@ -14,7 +15,7 @@ class EmailController extends Controller
      */
     public function index()
     {
-        $emails = Email::all();
+        $emails = EmailTemplate::all();
 
         return view('emails.index',compact('emails'));
     }
@@ -39,14 +40,13 @@ class EmailController extends Controller
     {
         request()->validate([
             'subject'   => 'required|string|max:255',
-            'message'  => 'required',
+            'content'  => 'required',
         ]);
-
+        $request->handle = $request->handle.'-'.$request->type;
         if ($request->has('use_me') && $request->input('use_me') == 1) {
-            Email::where('type', $request->input('type'))->update(['use_me' => false]);
-        }
-
-        Email::create($request->all());
+            EmailTemplate::where('type', $request->input('type'))->update(['use_me' => false]);
+        }		
+        EmailTemplate::create($request->all());
 
         return redirect()->route('emails.index')->with('alert', ['class' => 'success', 'message' => 'Email created successfully!']);
     }
@@ -59,7 +59,7 @@ class EmailController extends Controller
      */
     public function show($id)
     {
-        $email = Email::find($id);
+        $email = EmailTemplate::find($id);
 
         return view('emails.show',compact('email'));
     }
@@ -72,8 +72,8 @@ class EmailController extends Controller
      */
     public function edit($id)
     {
-        $email = Email::find($id);
-
+        $email = EmailTemplate::find($id);
+        list($email->handle) = explode("-", $email->handle);
         return view('emails.edit',compact('email'));
     }
 
@@ -88,14 +88,15 @@ class EmailController extends Controller
     {
         request()->validate([
             'subject'   => 'required|string|max:255',
-            'message'  => 'required',
+            'content'  => 'required',
         ]);
-
+        $requestData = $request->all();
+        $requestData['handle'] = $request->handle.'-'.$request->type;        
         if ($request->has('use_me') && $request->input('use_me') == 1) {
-            Email::where('type', $request->input('type'))->update(['use_me' => false]);
+            EmailTemplate::where('type', $request->input('type'))->update(['use_me' => false]);
         }
-
-        Email::find($id)->update($request->all());
+		
+        EmailTemplate::find($id)->update($requestData);
 
         return redirect()->route('emails.index')->with('alert', ['class' => 'success', 'message' => 'Email updated successfully!']);
     }
@@ -108,8 +109,17 @@ class EmailController extends Controller
      */
     public function destroy($id)
     {
-        Email::find($id)->delete();
+        EmailTemplate::find($id)->delete();
 
         return redirect()->route('emails.index')->with('alert', ['class' => 'success', 'message' => 'Email deleted successfully!']);
     }
+	
+	public function sendmail(Request $request) {
+		$data = array('name' => 'Jordan');
+	
+		Mail::send('emails.welcome', $data, function($message)
+		{
+			$message->to('zachary@morkil.com')->subject('Welcome email!');
+		});
+	}
 }

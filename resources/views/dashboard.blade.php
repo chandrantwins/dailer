@@ -6,23 +6,26 @@
 @endsection
 
 @section('content')
-    @if (in_array(Auth::user()->role, [\App\User::ADMIN,\App\User::SUBADMIN,\App\User::CANDIDATE]))
+    @if (in_array(Auth::user()->role, [\App\User::ADMIN,\App\User::SUBADMIN,\App\User::CANDIDATE,\App\User::CLOSER,\App\User::REQRUITED]))    
     <div class="row">
         @if (in_array(Auth::user()->role, [\App\User::ADMIN,\App\User::SUBADMIN]))
-        <div class="col-lg-1 col-xs-4">
+        <div class="col-lg-1 col-xs-2">
             <button class="btn btn-primary btn-dashboard disabled" data-type="candidate" data-row="1">Candidate</button>
         </div>
         <!-- ./col -->
-        <div class="col-lg-1 col-xs-4">
+        <div class="col-lg-1 col-xs-2">
             <button class="btn btn-success btn-dashboard" data-type="company" data-row="1">Company</button>
         </div>
+        <div class="col-lg-1 col-xs-2">
+            <button class="btn btn-info btn-dashboard" data-type="reqruited" data-row="1">Reqruited</button>
+        </div>
         <!-- ./col -->
-        <div class="col-lg-1 col-xs-4">
-            <button class="btn btn-warning btn-dashboard" data-type="both" data-row="1">Both</button>
+        <div class="col-lg-1 col-xs-2">
+            <button class="btn btn-warning btn-dashboard" data-type="both" data-row="1">All</button>
         </div>
         <!-- ./col -->
         @endif
-        <div class="col-lg-offset-6 col-lg-3 col-xs-12">
+        <div class="col-lg-offset-4 col-lg-4 col-xs-4">
             <div class="form-group">
                 <div class="input-group">
                     <button type="button" class="btn btn-default pull-right" id="daterange-row-1" data-row="1">
@@ -34,7 +37,7 @@
             <!-- /.form group -->
         </div>
         <!-- ./col -->
-    </div>
+    </div>    
     <div class="row">
         <div class="col-lg-2 col-xs-6">
             <!-- small box -->
@@ -55,6 +58,18 @@
                 </div>
             </div>
         </div>
+        @if (in_array(Auth::user()->role, [\App\User::CLOSER,\App\User::REQRUITED]))
+        <div class="col-lg-2 col-xs-6">
+            <!-- small box -->
+            <div class="small-box bg-yellow">
+                <div class="inner">
+                    <h3 class="text-center" id="wrong_numbers-row-1">{{$data['candidate']['wrong_numbers']}}</h3>
+                    <p class="text-center">No Shows</p>
+                </div>
+            </div>
+        </div>			
+        @endif
+        @if (!in_array(Auth::user()->role, [\App\User::CLOSER,\App\User::REQRUITED]))
         <!-- ./col -->
         <div class="col-lg-2 col-xs-6">
             <!-- small box -->
@@ -75,6 +90,7 @@
                 </div>
             </div>
         </div>
+        @endif
         <!-- ./col -->
         <div class="col-lg-2 col-xs-6">
             <!-- small box -->
@@ -103,20 +119,23 @@
     @if (in_array(Auth::user()->role, [\App\User::ADMIN,\App\User::SUBADMIN,\App\User::COMPANY]))
     <div class="row">
         @if (in_array(Auth::user()->role, [\App\User::ADMIN,\App\User::SUBADMIN]))
-        <div class="col-lg-1 col-xs-4">
+        <div class="col-lg-1 col-xs-2">
             <button class="btn btn-primary btn-dashboard" data-type="candidate" data-row="2">Candidate</button>
         </div>
         <!-- ./col -->
-        <div class="col-lg-1 col-xs-4">
+        <div class="col-lg-1 col-xs-2">
             <button class="btn btn-success btn-dashboard disabled" data-type="company" data-row="2">Company</button>
         </div>
+        <div class="col-lg-1 col-xs-2">
+            <button class="btn btn-info btn-dashboard" data-type="reqruited" data-row="2">Reqruited</button>
+        </div>
         <!-- ./col -->
-        <div class="col-lg-1 col-xs-4">
-            <button class="btn btn-warning btn-dashboard" data-type="both" data-row="2">Both</button>
+        <div class="col-lg-1 col-xs-2">
+            <button class="btn btn-warning btn-dashboard" data-type="both" data-row="2">All</button>
         </div>
         <!-- ./col -->
         @endif
-        <div class="col-lg-offset-6 col-lg-3 col-xs-12">
+        <div class="col-lg-offset-4 col-lg-4 col-xs-4">
             <div class="form-group">
                 <div class="input-group">
                     <button type="button" class="btn btn-default pull-right" id="daterange-row-2" data-row="2">
@@ -262,14 +281,14 @@
         </div>
         <!-- ./col -->
     </div>
-    <!-- /.row -->
+    <!-- /.row -->    
 @endsection
 
 @section('javascript')
     <!-- daterange picker -->
     <script src="{{asset('vendor/moment/min/moment.min.js')}}"></script>
     <script src="{{asset('vendor/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
-    <script type="text/javascript">
+    <script type="text/javascript">        
         $('#daterange-row-1').daterangepicker(
             {
                 ranges: {
@@ -380,6 +399,6 @@
             //$('#date-payout').html(picker.startDate.format('YYYY-MM-DD') + ' -> ' + picker.endDate.format('YYYY-MM-DD'));;
             dashboard($(this));
         });
-        @endif
+    @endif
     </script>
 @endsection

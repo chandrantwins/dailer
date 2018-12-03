@@ -8,10 +8,12 @@ class Contact extends Model
 {
     const TYPES = [
         'company'   =>  'company',
-        'candidate' =>  'candidate'
+        'candidate' =>  'candidate',
+        'reqruited' =>  'reqruited'
     ];
     const COMPANY = 'company';
     const CANDIDATE = 'candidate';
+    const REQRUITED = 'reqruited';
 
     const SUCCESSFUL = "Successful";
     const PROGRESS = "Progress";

@@ -34,5 +34,15 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
-
+    
+    'authorize' => [        
+        'login' => env('AUTHORIZE_PAYMENT_API_LOGIN_ID'),
+        'key' => env('AUTHORIZE_PAYMENT_TRANSACTION_KEY')
+    ],
+    
+    'twilio' => [
+        'twilio_account_sid'=>env('TWILIO_ACCOUNT_SID'),
+        'twilio_auth_token'=>env('TWILIO_AUTH_TOKEN'),
+        'twilio_number'=>env('TWILIO_NUMBER')
+    ]
 ];
