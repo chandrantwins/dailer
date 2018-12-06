@@ -6,8 +6,13 @@
     "type": "project",
     "require": {
         "php": ">=7.0.0",
+        "ext-curl": "*",
         "aloha/twilio": "^4.0",
+        "authorizenet/authorizenet": "~1.9.6",
+        "doctrine/dbal": "v2.4.2",
         "fideloper/proxy": "~3.3",
+        "invoiced/invoiced": "^0.14",
+        "jdtsoftware/laravel-email-templates": "^0.3.2",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "^5.4.0",
