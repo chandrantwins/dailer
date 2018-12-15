@@ -34,6 +34,10 @@
                 <label>Phone number:</label>
                 {!! Form::text('phone',null,['placeholder'=>'Phone number','class'=>'form-control']) !!}
             </div>
+			<div class="col-xs-12 form-group">
+                <label>Mobile number:</label>
+                {!! Form::text('mobile',null,['placeholder'=>'Mobile number','class'=>'form-control']) !!}
+            </div>
             <div class="col-xs-12 form-group">
                 <label>Email address:</label>
                 {!! Form::email('email',null,['placeholder'=>'Email address','class'=>'form-control']) !!}

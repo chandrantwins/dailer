@@ -3,7 +3,7 @@
 @section('content')
 <div class="row">
     <div class="col-lg-12 margin-tb">
-        <div class="pull-left"><h2>Edit Contact: Candidate</h2></div>
+        <div class="pull-left"><h2>Edit Contact: Reqruited</h2></div>
         <div class="pull-right"><a class="btn btn-primary" href="{{ route('contact.index',['type'=>'candidate']) }}"> Back</a></div>
     </div>
 </div>
