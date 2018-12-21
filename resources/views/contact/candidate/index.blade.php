@@ -34,6 +34,7 @@
                     <th>Position</th>
                     <th>Email address</th>
                     <th>Phone number</th>
+                    <th>Mobile number</th>
                     <th>Job description</th>
                     <th>Actions</th>
                 </tr>
@@ -46,6 +47,7 @@
                     <td>{{$contact->position}}</td>
                     <td>{{$contact->email}}</td>
                     <td>{{$contact->phone}}</td>
+                    <td>{{$contact->mobile}}</td>
                     <td>{{$contact->description}}</td>
                     <!-- we will also add show, edit, and delete buttons -->
                     <td>
@@ -68,7 +70,8 @@
 @section('javascript')
 <script>
     $(document).ready(function() {
-        $('#datatable_filter > label').before('<a id="deactivate_contacts" class="btn btn-warning btn-sm" style="margin-right: 10px;">Deactivate</button>');
+		$('#datatable_filter > label').before('<button id="download_contacts" class="btn btn-success btn-sm" style="margin-right: 10px;">Download CSV</button>');
+        $('#datatable_filter > label').before('<button id="deactivate_contacts" class="btn btn-warning btn-sm" style="margin-right: 10px;">Deactivate</button>');
 
         $('#deactivate_contacts').on('click', function() {
             var alert_success = '<div class="alert alert-success">You have deactivate contacts successfully.</div>';
@@ -87,6 +90,31 @@
                 type: 'GET',
                 url: '{{route('contact.deactivate')}}',
                 data: {contacts: contacts}
+            }).done(function(response) {
+                $('#here').html(alert_success);
+            }).fail(function(response) {
+                $('#here').html(alert_danger);
+            });
+        });
+		$('#download_contacts').on('click', function() {
+            var alert_success = '<div class="alert alert-success">You have downloaded CSV successfully.</div>';
+            var alert_danger = '<div class="alert alert-danger">Unknow error!! Download CSV process was not completed.</div>';
+
+            var contacts = [];
+            // Iterate over all checkboxes in the table
+            table.$('input[type="checkbox"]').each(function(){
+                // If checkbox is checked
+                if(this.checked){
+                    contacts.push(this.value);
+                }
+            });
+			if (contacts.length === 0) {
+				contacts.push('all');
+			}
+            $.ajax({
+                type: 'GET',
+                url: '{{route('contact.downloadcsv')}}',
+                data: {contacts: contacts, types:'candidate'}
             }).done(function(response) {
                 $('#here').html(alert_success);
             }).fail(function(response) {

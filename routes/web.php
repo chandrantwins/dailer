@@ -44,6 +44,7 @@ Route::group(['middleware' => ['auth','role:admin,subadmin']], function () {
     Route::get('/contact/import','ContactController@import')->name('contact.import');
     Route::post('/contact/import','ContactController@import')->name('contact.import');
     Route::get('/contact/assign','ContactController@assign')->name('contact.assign');
+    Route::get('/contact/downloadcsv','ContactController@downloadcsv')->name('contact.downloadcsv');
     Route::get('/contact/deactivate','ContactController@deactivate')->name('contact.deactivate');
     Route::get('/contact/deactivate_index','ContactController@deactivate_index')->name('contact.deactivate_index');
     Route::get('/contact/activate','ContactController@activate')->name('contact.activate');

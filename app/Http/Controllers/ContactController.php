@@ -1373,6 +1373,27 @@ and `answer` = ".$c[$i]->answer."
 
         return redirect()->route("contact.index", ['type' => $type])->with('alert', ['class' => 'success', 'message' => 'Contact(s) deactivated successfully']);
     }
+	
+	/**
+     * Display the specified resource.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadcsv(Request $request)
+    {
+        $type = $request->get('type');
+        $contacts = $request->get('contacts');
+        $contacts = is_array($contacts) ? $contacts : [$contacts];
+
+        /*for ($i = 0; $i < count($contacts); $i++) {
+            $contact = Contact::find($contacts[$i]);
+            $contact->enabled = 0;
+            $contact->save();
+        }*/
+		
+        return redirect()->route("contact.index", ['type' => $type])->with('alert', ['class' => 'success', 'message' => 'CSV downloaded successfully']);
+    }
 
     /**
      * Display the specified resource.
