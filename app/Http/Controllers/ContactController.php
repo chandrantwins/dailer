@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Response;
+//use Response;
 
 class ContactController extends Controller
 {
@@ -1382,17 +1384,35 @@ and `answer` = ".$c[$i]->answer."
      */
     public function downloadcsv(Request $request)
     {
-        $type = $request->get('type');
-        $contacts = $request->get('contacts');
-        $contacts = is_array($contacts) ? $contacts : [$contacts];
-
-        /*for ($i = 0; $i < count($contacts); $i++) {
-            $contact = Contact::find($contacts[$i]);
-            $contact->enabled = 0;
-            $contact->save();
-        }*/
 		
-        return redirect()->route("contact.index", ['type' => $type])->with('alert', ['class' => 'success', 'message' => 'CSV downloaded successfully']);
+		$headers = array(
+				"Content-type" => "text/csv",
+				"Content-Disposition" => "attachment; filename=file.csv",
+				"Pragma" => "no-cache",
+				"Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+				"Expires" => "0"
+			);
+		$columns = ['id','First Name', 'Last Name', 'Company Name', 'Title', 'Position', 'City Position', 'E Mail', 'Phone', 'note'];
+		$type = $request->get('type');
+		$contact_ids = $request->get('contacts');
+		if(is_array($contact_ids) && $contact_ids[0] != 'all'){
+			$contact_ids = is_array($contact_ids) ? $contact_ids : [$contact_ids];
+			$contacts = Contact::whereIn('id', $contact_ids)->where('type', $type)->get();
+		} else {
+			$contacts = Contact::where('type', $type)->get();
+		}
+	
+    $callback = function() use ($contacts, $columns)
+    {
+        $file = fopen('php://output', 'w');
+        fputcsv($file, $columns);
+
+        foreach($contacts as $contact) {
+            fputcsv($file, array($contact->id, $contact->first_name, $contact->last_name, $contact->company_name, $contact->title, $contact->position, $contact->city_position, $contact->email, $contact->phone, $contact->mobile, $contact->note));
+        }
+        fclose($file);
+    };
+    return Response::stream($callback, 200, $headers);
     }
 
     /**
