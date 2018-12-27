@@ -1393,7 +1393,7 @@ and `answer` = ".$c[$i]->answer."
 				"Expires" => "0"
 			);
 		$columns = ['id','First Name', 'Last Name', 'Company Name', 'Title', 'Position', 'City Position', 'E Mail', 'Phone', 'note'];
-		$type = $request->get('type');
+		$type = $request->get('types');
 		$contact_ids = $request->get('contacts');
 		if(is_array($contact_ids) && $contact_ids[0] != 'all'){
 			$contact_ids = is_array($contact_ids) ? $contact_ids : [$contact_ids];
