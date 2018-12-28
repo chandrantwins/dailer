@@ -116,6 +116,7 @@
                 url: '{{route('contact.downloadcsv')}}',
                 data: {contacts: contacts, types:'candidate'}
             }).done(function(response) {
+				//alert(response.getResponseHeader('some_header'));
                 $('#here').html(alert_success);
             }).fail(function(response) {
                 $('#here').html(alert_danger);

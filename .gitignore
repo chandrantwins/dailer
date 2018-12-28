@@ -13,3 +13,7 @@ yarn-error.log
 .env
 .nginx
 /nbproject/private/
+/config/app.php
+/config/database.php
+/.env.example
+/composer.lock

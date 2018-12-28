@@ -1386,7 +1386,7 @@ and `answer` = ".$c[$i]->answer."
     {
 		
 		$headers = array(
-				"Content-type" => "text/csv",
+				"Content-type" => "text/x-csv",
 				"Content-Disposition" => "attachment; filename=file.csv",
 				"Pragma" => "no-cache",
 				"Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
