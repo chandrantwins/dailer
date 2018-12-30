@@ -117,6 +117,7 @@
                 data: {contacts: contacts, types:'candidate'}
             }).done(function(response) {
 				//alert(response.getResponseHeader('some_header'));
+				 window.open("{{route('contact.downloadcsv')}}");
                 $('#here').html(alert_success);
             }).fail(function(response) {
                 $('#here').html(alert_danger);

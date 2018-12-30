@@ -117,6 +117,7 @@
                 url: '{{route('contact.downloadcsv')}}',
                 data: {contacts: contacts, types:'reqruited'}
             }).done(function(response) {
+				window.open("{{route('contact.downloadcsv')}}");
                 $('#here').html(alert_success);
             }).fail(function(response) {
                 $('#here').html(alert_danger);

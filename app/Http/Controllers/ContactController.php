@@ -1392,7 +1392,7 @@ and `answer` = ".$c[$i]->answer."
 				"Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
 				"Expires" => "0"
 			);
-		$columns = ['id','First Name', 'Last Name', 'Company Name', 'Title', 'Position', 'City Position', 'E Mail', 'Phone', 'note'];
+		$columns = ['id','First Name', 'Last Name', 'Company Name', 'Title', 'Position', 'City Position', 'E Mail', 'Phone','Mobile','note'];
 		$type = $request->get('types');
 		$contact_ids = $request->get('contacts');
 		if(is_array($contact_ids) && $contact_ids[0] != 'all'){
@@ -1404,13 +1404,13 @@ and `answer` = ".$c[$i]->answer."
 	
     $callback = function() use ($contacts, $columns)
     {
-        $file = fopen('php://output', 'w');
-        fputcsv($file, $columns);
+        $csvFile = fopen('php://output', 'w');
+        fputcsv($csvFile, $columns);
 
         foreach($contacts as $contact) {
-            fputcsv($file, array($contact->id, $contact->first_name, $contact->last_name, $contact->company_name, $contact->title, $contact->position, $contact->city_position, $contact->email, $contact->phone, $contact->mobile, $contact->note));
+            fputcsv($csvFile, array($contact->id, $contact->first_name, $contact->last_name, $contact->company_name, $contact->title, $contact->position, $contact->city_position, $contact->email, $contact->phone, $contact->mobile, $contact->note));
         }
-        fclose($file);
+        fclose($csvFile);
     };
     return Response::stream($callback, 200, $headers);
     }
