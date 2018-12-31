@@ -1408,8 +1408,10 @@ and `answer` = ".$c[$i]->answer."
         fputcsv($csvFile, $columns);
 
         foreach($contacts as $contact) {
-            fputcsv($csvFile, array($contact->id, $contact->first_name, $contact->last_name, $contact->company_name, $contact->title, $contact->position, $contact->city_position, $contact->email, $contact->phone, $contact->mobile, $contact->note));
+			$con = array("$contact->id", "$contact->first_name", "$contact->last_name", "$contact->company_name", "$contact->title", "$contact->position", "$contact->city_position", "$contact->email", "$contact->phone", "$contact->mobile", "$contact->note");
+            
         }
+		fputcsv($csvFile, $con );
         fclose($csvFile);
     };
     return Response::stream($callback, 200, $headers);
