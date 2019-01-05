@@ -429,81 +429,19 @@ class AppointmentController extends Controller
      */
     public function calendarapi()
     {
-            $allAppointments = Appointment::orderBy('id', 'ASC')->where('assigned_to',Auth::user()->id)->get();
-            $timezonesetting = Setting::select('value')->where('key','timezone_' . Auth::user()->id)->get();
-            $timezone = $this->getTimezoneNameByIndex($timezonesetting[0]->value);            
+            $get_timezone = 1 ; //GET TIMEZONE in REQUEST
+			$allAppointments = Appointment::orderBy('id', 'ASC')->get(); //
+            //$timezonesetting = Setting::select('value')->where('id',$get_timezone)->get();
+            $timezone = $this->getTimezoneNameByIndex($get_timezone);            
             $event_list = [];
             foreach($allAppointments as $appoinment){
                 $notificationdate = $this->getConvertedDateTime($appoinment->originalnotificationTime,'UTC',$timezone,'Y-m-d H:i:s');
-                $event_list[] = Calendar::event(
-                    $appoinment->name,
-                    false,
-                    new \DateTime($notificationdate),
-                    new \DateTime($notificationdate.'+30 minutes'),
-                    'calevent_'.$appoinment->id,
-                    array('color'=>"#ff9f89",'className'=>'fc-custom','editable'=>false,'overlap'=>false,'url'=>'/closer/contactview/'.$appoinment->contact_id.'/'.$appoinment->id)
-                );
+				$event_list[] = array('title'=>$appoinment->name,'color'=>"#ff9f89",'className'=>'fc-custom','editable'=>false,'overlap'=>false,'start'=>new \DateTime($notificationdate),'end'=>new \DateTime($notificationdate.'+30 minutes'),'url'=>'/closer/contactview/'.$appoinment->contact_id.'/'.$appoinment->id);
+				
             }
             $businessHours = [["start" => "08:00", "end" => "12:00", "dow" => [1,2,3,4,5],"className"=>"fc-nonbusiness"],["start" => "14:00", "end" => "17:00", "dow" => [1,2,3,4,5]]];
-            $calendar_details = Calendar::addEvents($event_list)->setOptions(['defaultView' => 'agendaWeek','businessHours'=>$businessHours])->setCallbacks([
-                       'header'=> '{
-                        left: "prev,next today",
-                        center: "title",
-                        right: "agendaWeek,agendaDay"
-                }',
-                'allDaySlot'=> 'false',						
-                'editable'=> 'true',
-                'weekends'=> 'false',
-                'eventLimit'=> 'true', // allow "more" link when too many events
-                'selectable'=> 'true',
-                'selectHelper'=>'true',
-                'eventColor'=>"'green'",
-                'disableDragging'=>'true',
-                'navLinks'=> 'true', // can click day/week names to navigate views
-                /**'businessHours'=> '[ 
-                    { start: "07:00",end: "12:00",dow: [1, 2, 3 ,4 , 5]},
-                    { start: "14:00",end: "17:00",dow: [1, 2, 3 ,4 , 5]},
-                ]',**/
-                'select'=> 'function(start, end, jsEvent, view) {
-                        //https://stackoverflow.com/questions/42871482/jquery-inarray-disabling-days-with-select-option-in-fullcalendar
-                        var events = $("div[id^=\"calendar\"]").fullCalendar("clientEvents");
-                        var businessHours = $("div[id^=\"calendar\"]").fullCalendar("option","businessHours");
-                        console.log(businessHours);
-                        console.log(events);
-                        if (moment().diff(start, "days") > 0) {
-                            alert("Please select Future date");
-                            $("div[id^=\"calendar\"]").fullCalendar("unselect");
-                            return false;
-                        }
-                        if($("#timezone").val() == ""){
-                                alert("Please select timezone");
-                        }else{								
-                            $("div[id^=\"eventmodal\"]").attr("id","eventmodal"+Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-                            // Display the modal.
-                            // You could fill in the start and end fields based on the parameters
-                            $("div[id^=\"eventmodal\"]").modal("show");
-                            $("div[id^=\"eventmodal\"]").find("#time-of-appointment-local").val(moment(start).format("MM/DD/YYYY hh:mm A"));
-                        }
-                }',
-                'eventClick' => 'function(event) { 
-                        console.log("You clicked on an event!");
-                        console.log(event);
-                        // Display the modal and set the values to the event values.
-                        $("div[id^=\"eventmodal\"]").modal("show");
-                        $("div[id^=\"eventmodal\"]").find("#name").val(event.title);
-                        $("div[id^=\"eventmodal\"]").find("#time-of-appointment-local").val(moment(event.start).format("MM/DD/YYYY hh:mm A"));
-                }',
-                'dayClick'=>'function(date, jsEvent, view) {
-                    if (jsEvent.target.classList.contains("fc-custom")) {
-                        alert("Click Background Event Area");
-                    }
-                }',
-                'eventRender'=>'function (event, element) {
-                    console.log(event);
-                }'
-        ]);          
-        
-        return response()->json(array('calendar_details' => $calendar_details));
+            //$calendar_details = Calendar::addEvents($event_list);          
+			return response()->json(array('calendar_details' => $event_list));
     }
 
     private function appointmentFromRequest(Request $request) {		
